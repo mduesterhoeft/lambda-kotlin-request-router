@@ -2,7 +2,6 @@ package com.github.mduesterhoeft.router
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.mduesterhoeft.router.ProtoBufUtils.toJsonWithoutWrappers
 import com.google.common.net.MediaType
@@ -18,20 +17,11 @@ abstract class RequestHandler : RequestHandler<ApiRequest, ApiResponse> {
 
     override fun handleRequest(input: ApiRequest, context: Context): ApiResponse? {
         log.info("handling request with method '${input.httpMethod}' and path '${input.path}' - Accept:${input.acceptHeader} Content-Type:${input.contentType} $input")
-        val routes = router.routes as List<RouterFunction<Any, Any>>
-        val matchResults: List<MatchResult> = routes.map { routerFunction: RouterFunction<Any, Any> ->
-            val matchResult = routerFunction.requestPredicate.match(input)
-            log.info("match result for route '$routerFunction' is '$matchResult'")
-            if (matchResult.match) {
-                val handler: HandlerFunction<Any, Any> = routerFunction.handler
-                val request = deserializeRequest(handler, input)
-                val response = handler(Request(input, request))
-                return createResponse(input, response)
-            }
-
-            matchResult
-        }
-        return handleNonDirectMatch(matchResults, input)
+        return router.findExactRouterFunction(input)
+            ?.let { it.handler as HandlerFunction<Any, Any> }
+            ?.let { it(Request(input, deserializeRequest(it, input))) }
+            ?.let { createResponse(input, it) }
+            ?: handleNonDirectMatch(input)
     }
 
     private fun deserializeRequest(
@@ -46,8 +36,9 @@ abstract class RequestHandler : RequestHandler<ApiRequest, ApiResponse> {
         }
     }
 
-    private fun handleNonDirectMatch(matchResults: List<MatchResult>, input: ApiRequest): ApiResponse {
+    private fun handleNonDirectMatch(input: ApiRequest): ApiResponse {
         // no direct match
+        val matchResults = router.findNonMatchingMatches(input)
         if (matchResults.any { it.matchPath && it.matchMethod && !it.matchContentType }) {
             return createErrorResponse(
                 input, ApiException(
@@ -98,7 +89,7 @@ abstract class RequestHandler : RequestHandler<ApiRequest, ApiResponse> {
         )
 
     open fun <T> createResponse(input: ApiRequest, response: ResponseEntity<T>): ApiResponse {
-        val accept = MediaType.parse(input.acceptHeader)
+        val accept = MediaType.parse(input.acceptHeader.orEmpty())
         return when {
             response.body is Unit -> ApiJsonResponse(statusCode = 204, body = null)
             accept.`is`(MediaType.parse("application/x-protobuf")) -> ApiProtoResponse(

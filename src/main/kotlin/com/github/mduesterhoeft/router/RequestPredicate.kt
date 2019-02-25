@@ -40,7 +40,7 @@ data class RequestPredicate(
     companion object
 }
 
-internal data class MatchResult(
+data class MatchResult(
     val matchPath: Boolean = false,
     val matchMethod: Boolean = false,
     val matchAcceptType: Boolean = false,

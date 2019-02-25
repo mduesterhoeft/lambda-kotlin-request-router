@@ -152,10 +152,10 @@ class RequestHandlerTest {
         data class TestResponse(val greeting: String)
         data class TestRequest(val greeting: String)
         override val router = router {
-            GET("/some") { request: Request<Unit> ->
+            GET("/some") { _: Request<Unit> ->
                 ResponseEntity.ok(TestResponse("Hello"))
             }
-            GET("/some-proto") { request: Request<Unit> ->
+            GET("/some-proto") { _: Request<Unit> ->
                 ResponseEntity.ok(Sample.newBuilder().setHello("Hello").build())
             }
             POST("/some") { r: Request<TestRequest> ->
