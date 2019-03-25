@@ -140,6 +140,7 @@ abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIG
         }
 
     open fun <T> createResponse(input: APIGatewayProxyRequestEvent, response: ResponseEntity<T>): APIGatewayProxyResponseEvent {
+        //TODO add default accept type
         val accept = MediaType.parse(input.acceptHeader())
         return when {
             response.body is Unit -> APIGatewayProxyResponseEvent()
@@ -155,7 +156,7 @@ abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIG
                 if (response.body is GeneratedMessageV3)
                     APIGatewayProxyResponseEvent()
                         .withStatusCode(response.statusCode)
-                        .withBody(toJsonWithoutWrappers(response.body))
+                        .withBody(toJsonWithoutWrappers(response .body))
                         .withHeaders(response.headers + ("Content-Type" to "application/json"))
                 else
                     APIGatewayProxyResponseEvent()
