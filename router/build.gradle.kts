@@ -5,15 +5,11 @@ dependencies {
     compile(kotlin("reflect"))
     compile("com.amazonaws:aws-lambda-java-core:1.2.0")
     compile("com.amazonaws:aws-lambda-java-events:2.2.5")
-
-
+    
     compile("org.slf4j:slf4j-api:1.7.26")
     compile("com.fasterxml.jackson.core:jackson-databind:2.9.8")
     compile("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.8")
     compile("com.google.guava:guava:23.0")
-
-    compile("com.google.protobuf:protobuf-java:3.6.1")
-    compile("com.google.protobuf:protobuf-java-util:3.6.1")
 
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.4.0")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.12")

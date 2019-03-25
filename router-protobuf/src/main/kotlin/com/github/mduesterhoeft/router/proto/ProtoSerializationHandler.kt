@@ -1,14 +1,12 @@
 package com.github.mduesterhoeft.router.proto
 
-import com.github.mduesterhoeft.router.ProtoBufUtils
 import com.github.mduesterhoeft.router.ResponseEntity
 import com.github.mduesterhoeft.router.SerializationHandler
 import com.google.common.net.MediaType
 import com.google.protobuf.GeneratedMessageV3
 import java.util.Base64
 
-
-class ProtoSerializationHandler: SerializationHandler {
+class ProtoSerializationHandler : SerializationHandler {
 
     private val json = MediaType.parse("application/json")
 

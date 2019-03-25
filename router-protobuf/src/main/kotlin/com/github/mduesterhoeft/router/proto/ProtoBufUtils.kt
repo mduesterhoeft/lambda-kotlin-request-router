@@ -15,9 +15,7 @@ object ProtoBufUtils {
 
         fun removeWrapperObjects(json: String): String {
             return ProtoBufUtils.removeWrapperObjects(
-                jacksonObjectMapper().readTree(
-                    json
-                )
+                jacksonObjectMapper().readTree(json)
             ).toString()
         }
 

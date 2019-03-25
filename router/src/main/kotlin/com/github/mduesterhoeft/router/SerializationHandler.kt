@@ -10,7 +10,16 @@ interface SerializationHandler {
     fun serialize(acceptHeader: MediaType, response: ResponseEntity<*>): String
 }
 
-class JsonSerializationHandler(val objectMapper: ObjectMapper): SerializationHandler {
+class SerializationHandlerChain(private val handlers: List<SerializationHandler>) : SerializationHandler {
+
+    override fun supports(acceptHeader: MediaType, response: ResponseEntity<*>): Boolean =
+        handlers.any { it.supports(acceptHeader, response) }
+
+    override fun serialize(acceptHeader: MediaType, response: ResponseEntity<*>): String =
+        handlers.first { it.supports(acceptHeader, response) }.serialize(acceptHeader, response)
+}
+
+class JsonSerializationHandler(val objectMapper: ObjectMapper) : SerializationHandler {
 
     private val json = MediaType.parse("application/json")
 

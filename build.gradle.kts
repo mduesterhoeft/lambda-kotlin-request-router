@@ -9,10 +9,10 @@ buildscript {
 
 plugins {
     java
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.21"
     maven
     `maven-publish`
-    id("org.jmailen.kotlinter") version "1.20.1"
+    id("org.jmailen.kotlinter") version "1.22.0"
 }
 
 group = "com.github.mduesterhoeft"
@@ -36,7 +36,7 @@ subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jmailen.kotlinter")
-    
+
     tasks {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = "1.8"
@@ -46,8 +46,7 @@ subprojects {
             useJUnitPlatform()
         }
     }
-
-
+    
     publishing {
         publications {
             create<MavenPublication>("maven") {
