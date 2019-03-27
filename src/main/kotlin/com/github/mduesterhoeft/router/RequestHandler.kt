@@ -14,6 +14,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Base64
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.reflect
 
 abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -56,10 +57,10 @@ abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIG
         input: APIGatewayProxyRequestEvent
     ): Any {
         val requestType = handler.reflect()!!.parameters.first().type.arguments.first().type?.classifier as KClass<*>
-        return when (requestType) {
-            Unit::class -> Unit
-            String::class -> input.body!!
-            List::class -> {
+        return when {
+            requestType == Unit::class -> Unit
+            requestType == String::class -> input.body!!
+            requestType.isSubclassOf(Collection::class) -> {
                 val kClass = handler.reflect()!!.parameters.first().type.arguments.first().type!!.arguments.first().type!!.classifier as KClass<*>
                 val type = TypeFactory.defaultInstance().constructParametricType(requestType.javaObjectType, kClass.javaObjectType)
                 objectMapper.readValue(input.body, type)
