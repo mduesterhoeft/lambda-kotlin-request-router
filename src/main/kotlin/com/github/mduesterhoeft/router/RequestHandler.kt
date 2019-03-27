@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import com.fasterxml.jackson.databind.type.TypeFactory
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.mduesterhoeft.router.ProtoBufUtils.toJsonWithoutWrappers
@@ -58,6 +59,11 @@ abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIG
         return when (requestType) {
             Unit::class -> Unit
             String::class -> input.body!!
+            List::class -> {
+                val kClass = handler.reflect()!!.parameters.first().type.arguments.first().type!!.arguments.first().type!!.classifier as KClass<*>
+                val type = TypeFactory.defaultInstance().constructParametricType(requestType.javaObjectType, kClass.javaObjectType)
+                objectMapper.readValue(input.body, type)
+            }
             else -> objectMapper.readValue(input.body, requestType.java)
         }
     }
@@ -131,7 +137,6 @@ abstract class RequestHandler : RequestHandler<APIGatewayProxyRequestEvent, APIG
                     .withStatusCode(500)
                     .withHeaders(mapOf("Content-Type" to "application/json"))
         }
-
 
     open fun <T> createResponse(input: APIGatewayProxyRequestEvent, response: ResponseEntity<T>): APIGatewayProxyResponseEvent {
         val accept = MediaType.parse(input.acceptHeader())
